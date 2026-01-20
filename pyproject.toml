@@ -7,7 +7,7 @@ name = "smcs"
 version = "0.1.0"
 description = "JAX-based Sequential Monte Carlo library for time series prediction"
 readme = "README.md"
-license = {text = "MIT"}
+license = "Apache-2.0"
 requires-python = ">=3.10"
 authors = [
     {name = "HarudoBoruzu"}
@@ -23,7 +23,7 @@ keywords = [
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
@@ -62,6 +62,9 @@ docs = [
 
 [project.urls]
 Homepage = "https://github.com/HarudoBoruzu/smcs"
+Repository = "https://github.com/HarudoBoruzu/smcs.git"
+Issues = "https://github.com/HarudoBoruzu/smcs/issues"
+Documentation = "https://github.com/HarudoBoruzu/smcs#readme"
 
 [tool.hatch.build.targets.sdist]
 include = ["/src"]
