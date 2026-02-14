@@ -31,7 +31,7 @@ class ARIMAAgent(BaseAgent):
 
     def __init__(
         self,
-        config: "SMCConfig",
+        config: SMCConfig,
         order: tuple[int, int, int] = (1, 0, 0),
     ):
         """Initialize ARIMA Agent.
@@ -131,10 +131,12 @@ class ARIMAAgent(BaseAgent):
             m0 = m0.at[0].set(y_diff[-1] if len(y_diff) > 0 else 0.0)
 
         # Initial covariance (stationary variance approximation)
-        if p > 0 and jnp.sum(ar_coeffs**2) < 1:
-            stationary_var = float(sigma**2 / (1 - jnp.sum(ar_coeffs**2)))
-        else:
-            stationary_var = float(sigma**2)
+        ar_sum_sq = jnp.sum(ar_coeffs**2) if p > 0 else jnp.array(0.0)
+        stationary_var = jnp.where(
+            (p > 0) & (ar_sum_sq < 1),
+            sigma**2 / (1 - ar_sum_sq),
+            sigma**2,
+        )
         C0 = jnp.eye(state_dim) * stationary_var
 
         logger.debug(f"Estimated AR coeffs: {ar_coeffs}, sigma: {sigma:.4f}")
@@ -142,8 +144,8 @@ class ARIMAAgent(BaseAgent):
         return ARIMAParams(
             ar_coeffs=ar_coeffs,
             ma_coeffs=ma_coeffs,
-            sigma=float(sigma),
-            d=d,
+            sigma=jnp.asarray(sigma),
+            d=jnp.asarray(d, dtype=jnp.int32),
             m0=m0,
             C0=C0,
         )

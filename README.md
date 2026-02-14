@@ -5,6 +5,7 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
+
 **smcs** is a JAX-based Sequential Monte Carlo library for time series prediction. It combines the academic rigor of [particles](https://github.com/nchopin/particles), the functional design patterns of [BlackJAX](https://github.com/blackjax-devs/blackjax), and the state-space model abstractions of [Dynamax](https://github.com/probml/dynamax).
 
 ## Features
@@ -33,12 +34,6 @@
 
 ```bash
 pip install smcs
-```
-
-Or with uv:
-
-```bash
-uv add smcs
 ```
 
 For development:
@@ -203,7 +198,7 @@ config = SMCConfig(
 
 ```bash
 # Clone repository
-git clone https://github.com/HarudoBoruzu/smcs.git
+git clone https://github.com/smcs-authors/smcs.git
 cd smcs
 
 # Install in development mode
@@ -230,4 +225,4 @@ mypy src
 
 ## License
 
-Apache License 2.0 - see [LICENSE](LICENSE) for details.
+MIT License - see [LICENSE](LICENSE) for details.

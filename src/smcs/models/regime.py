@@ -7,10 +7,10 @@ from __future__ import annotations
 
 import chex
 import jax.numpy as jnp
-from jaxtyping import Array, Float, Int
+from jaxtyping import Array, Float
 
 from smcs.models.base import ModelParams, StateSpaceModel
-from smcs.models.distributions import Categorical, Distribution, MultivariateNormal, Normal
+from smcs.models.distributions import Categorical, Distribution, Normal
 
 __all__ = [
     "MarkovSwitchingParams",
@@ -64,8 +64,8 @@ class MSLocalLevelParams(ModelParams):
     pi0: Float[Array, " n_regimes"]
     sigma_obs: Float[Array, " n_regimes"]
     sigma_level: Float[Array, " n_regimes"]
-    m0: float
-    C0: float
+    m0: Float[Array, ""]
+    C0: Float[Array, ""]
 
 
 class MarkovSwitchingModel(StateSpaceModel):

@@ -33,7 +33,7 @@ class SVAgent(BaseAgent):
     making SMC particularly well-suited for inference.
     """
 
-    def __init__(self, config: "SMCConfig"):
+    def __init__(self, config: SMCConfig):
         """Initialize SV Agent.
 
         Parameters
@@ -105,9 +105,9 @@ class SVAgent(BaseAgent):
         )
 
         return SVParams(
-            mu=float(mu),
-            phi=float(phi),
-            sigma_eta=float(sigma_eta),
-            h0=float(h0),
-            P0=float(P0),
+            mu=jnp.asarray(mu),
+            phi=jnp.asarray(phi),
+            sigma_eta=jnp.asarray(sigma_eta),
+            h0=jnp.asarray(h0),
+            P0=jnp.asarray(P0),
         )

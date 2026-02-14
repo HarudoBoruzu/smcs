@@ -7,7 +7,8 @@ guide particle propagation.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import jax
 import jax.numpy as jnp
@@ -32,9 +33,9 @@ __all__ = [
 def auxiliary_step(
     key: PRNGKeyArray,
     state: SMCState,
-    observation: Float[Array, "..."],
-    model: "StateSpaceModel",
-    params: "ModelParams",
+    observation: Float[Array, ...],
+    model: StateSpaceModel,
+    params: ModelParams,
     ess_threshold: float = 0.5,
     resampling_method: ResamplingMethod = "systematic",
     predictive_likelihood_fn: Callable | None = None,
@@ -91,7 +92,7 @@ def auxiliary_step(
 
         mu = jnp.atleast_1d(mu)
         emit_dist = model.emission_distribution(params, mu, state.step + 1)
-        return emit_dist.log_prob(observation)
+        return jnp.squeeze(emit_dist.log_prob(observation))
 
     if predictive_likelihood_fn is not None:
         log_predictive = vmap(lambda p: predictive_likelihood_fn(params, p, observation))(
@@ -142,7 +143,7 @@ def auxiliary_step(
     # Second-stage weight adjustment
     def compute_actual_likelihood(particle):
         emit_dist = model.emission_distribution(params, particle, state.step + 1)
-        return emit_dist.log_prob(observation)
+        return jnp.squeeze(emit_dist.log_prob(observation))
 
     log_actual = vmap(compute_actual_likelihood)(new_particles)
 
@@ -173,8 +174,8 @@ def auxiliary_step(
 def run_auxiliary_filter(
     key: PRNGKeyArray,
     observations: Float[Array, "n_timesteps ..."],
-    model: "StateSpaceModel",
-    params: "ModelParams",
+    model: StateSpaceModel,
+    params: ModelParams,
     n_particles: int = 1000,
     ess_threshold: float = 0.5,
     resampling_method: ResamplingMethod = "systematic",

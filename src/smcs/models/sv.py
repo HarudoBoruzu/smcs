@@ -45,11 +45,11 @@ class SVParams(ModelParams):
         Initial log-volatility variance.
     """
 
-    mu: float
-    phi: float
-    sigma_eta: float
-    h0: float
-    P0: float
+    mu: Float[Array, ""]
+    phi: Float[Array, ""]
+    sigma_eta: Float[Array, ""]
+    h0: Float[Array, ""]
+    P0: Float[Array, ""]
 
 
 @chex.dataclass(frozen=True)
@@ -74,12 +74,12 @@ class SVLeverageParams(ModelParams):
         Initial log-volatility variance.
     """
 
-    mu: float
-    phi: float
-    sigma_eta: float
-    rho: float
-    h0: float
-    P0: float
+    mu: Float[Array, ""]
+    phi: Float[Array, ""]
+    sigma_eta: Float[Array, ""]
+    rho: Float[Array, ""]
+    h0: Float[Array, ""]
+    P0: Float[Array, ""]
 
 
 class SVModel(StateSpaceModel):

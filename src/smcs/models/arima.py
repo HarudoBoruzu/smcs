@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import chex
 import jax.numpy as jnp
-from jaxtyping import Array, Float
+from jaxtyping import Array, Float, Int
 
 from smcs.models.base import ModelParams, StateSpaceModel
 from smcs.models.distributions import Distribution, MultivariateNormal, Normal
@@ -40,8 +40,8 @@ class ARIMAParams(ModelParams):
 
     ar_coeffs: Float[Array, " p"]
     ma_coeffs: Float[Array, " q"]
-    sigma: float
-    d: int
+    sigma: Float[Array, ""]
+    d: Int[Array, ""]
     m0: Float[Array, " state_dim"]
     C0: Float[Array, "state_dim state_dim"]
 

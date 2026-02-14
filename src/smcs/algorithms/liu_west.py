@@ -6,16 +6,17 @@ parameters by artificially introducing dynamics through kernel shrinkage.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import chex
 import jax
 import jax.numpy as jnp
 from beartype import beartype
 from jax import lax, vmap
-from jaxtyping import Array, Float, PRNGKeyArray, jaxtyped
+from jaxtyping import Array, Float, Int, PRNGKeyArray, jaxtyped
 
-from smcs.core.particles import SMCInfo, SMCState
+from smcs.core.particles import SMCInfo
 from smcs.core.resampling import ResamplingMethod, resample
 from smcs.core.weights import compute_ess
 
@@ -50,8 +51,8 @@ class LiuWestState:
     state_particles: Float[Array, "n_particles state_dim"]
     param_particles: Float[Array, "n_particles param_dim"]
     log_weights: Float[Array, " n_particles"]
-    log_likelihood: float
-    step: int
+    log_likelihood: Float[Array, ""]
+    step: Int[Array, ""]
 
     @property
     def n_particles(self) -> int:
@@ -74,8 +75,8 @@ class LiuWestState:
 def liu_west_step(
     key: PRNGKeyArray,
     state: LiuWestState,
-    observation: Float[Array, "..."],
-    model: "StateSpaceModel",
+    observation: Float[Array, ...],
+    model: StateSpaceModel,
     param_to_model_params: Callable,
     delta: float = 0.98,
     ess_threshold: float = 0.5,
@@ -215,7 +216,7 @@ def liu_west_step(
 def run_liu_west_filter(
     key: PRNGKeyArray,
     observations: Float[Array, "n_timesteps ..."],
-    model: "StateSpaceModel",
+    model: StateSpaceModel,
     param_to_model_params: Callable,
     initial_state_sampler: Callable,
     initial_param_sampler: Callable,
@@ -275,8 +276,8 @@ def run_liu_west_filter(
         state_particles=initial_states,
         param_particles=initial_params,
         log_weights=jnp.zeros(n_particles),
-        log_likelihood=0.0,
-        step=0,
+        log_likelihood=jnp.array(0.0),
+        step=jnp.array(0, dtype=jnp.int32),
     )
 
     # Scan function

@@ -31,8 +31,8 @@ __all__ = [
 @jaxtyped(typechecker=beartype)
 def initialize_particles(
     key: PRNGKeyArray,
-    model: "StateSpaceModel",
-    params: "ModelParams",
+    model: StateSpaceModel,
+    params: ModelParams,
     n_particles: int,
 ) -> SMCState:
     """Initialize particles from the initial distribution.
@@ -67,8 +67,8 @@ def initialize_particles(
         particles=particles,
         log_weights=jnp.zeros(n_particles),
         ancestors=jnp.arange(n_particles),
-        log_likelihood=0.0,
-        step=0,
+        log_likelihood=jnp.array(0.0),
+        step=jnp.array(0, dtype=jnp.int32),
     )
 
 
@@ -76,9 +76,9 @@ def initialize_particles(
 def bootstrap_step(
     key: PRNGKeyArray,
     state: SMCState,
-    observation: Float[Array, "..."],
-    model: "StateSpaceModel",
-    params: "ModelParams",
+    observation: Float[Array, ...],
+    model: StateSpaceModel,
+    params: ModelParams,
     ess_threshold: float = 0.5,
     resampling_method: ResamplingMethod = "systematic",
 ) -> tuple[SMCState, SMCInfo]:
@@ -150,7 +150,7 @@ def bootstrap_step(
     # Update weights with observation likelihood
     def compute_log_likelihood(particle):
         emit_dist = model.emission_distribution(params, particle, state.step + 1)
-        return emit_dist.log_prob(observation)
+        return jnp.squeeze(emit_dist.log_prob(observation))
 
     log_likelihoods = vmap(compute_log_likelihood)(new_particles)
     new_log_weights = log_weights + log_likelihoods
@@ -179,8 +179,8 @@ def bootstrap_step(
 def run_bootstrap_filter(
     key: PRNGKeyArray,
     observations: Float[Array, "n_timesteps ..."],
-    model: "StateSpaceModel",
-    params: "ModelParams",
+    model: StateSpaceModel,
+    params: ModelParams,
     n_particles: int = 1000,
     ess_threshold: float = 0.5,
     resampling_method: ResamplingMethod = "systematic",

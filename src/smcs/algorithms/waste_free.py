@@ -6,14 +6,15 @@ all intermediate MCMC samples rather than discarding them.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import chex
 import jax
 import jax.numpy as jnp
 from beartype import beartype
 from jax import lax, vmap
-from jaxtyping import Array, Float, PRNGKeyArray, jaxtyped
+from jaxtyping import Array, Float, Int, PRNGKeyArray, jaxtyped
 
 from smcs.core.particles import SMCInfo
 from smcs.core.resampling import systematic_resample
@@ -50,8 +51,8 @@ class WasteFreeState:
 
     particles: Float[Array, "n_particles dim"]
     log_weights: Float[Array, " n_particles"]
-    log_likelihood: float
-    step: int
+    log_likelihood: Float[Array, ""]
+    step: Int[Array, ""]
 
     @property
     def n_particles(self) -> int:
@@ -138,7 +139,7 @@ def waste_free_step(
         # w^{(i,j)} = (1/k) * pi_n(x^{(i,j)}) / pi_{n-1}(x^{(i,j)})
         # For SMC samplers with tempering: ratio is the likelihood ratio
         new_log_probs = vmap(target_log_prob)(new_particles)
-        old_log_probs = vmap(target_log_prob)(particles[:n_particles])
+        _old_log_probs = vmap(target_log_prob)(particles[:n_particles])  # noqa: F841
 
         # Approximate: use uniform weights within chains
         new_log_weights = jnp.zeros(n_particles)
@@ -214,15 +215,15 @@ def run_waste_free_smc(
     init_state = WasteFreeState(
         particles=initial_particles,
         log_weights=jnp.zeros(n_particles),
-        log_likelihood=0.0,
-        step=0,
+        log_likelihood=jnp.array(0.0),
+        step=jnp.array(0, dtype=jnp.int32),
     )
 
     state = init_state
     info_history = []
     keys = jax.random.split(key, len(target_sequence))
 
-    for t, (step_key, target_log_prob) in enumerate(zip(keys, target_sequence[1:], strict=False)):
+    for _, (step_key, target_log_prob) in enumerate(zip(keys, target_sequence[1:], strict=False)):
         state, info = waste_free_step(
             step_key,
             state,

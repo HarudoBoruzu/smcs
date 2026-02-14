@@ -40,7 +40,7 @@ class LocalLevelAgent(BaseAgent):
     but with a slowly-changing level.
     """
 
-    def __init__(self, config: "SMCConfig"):
+    def __init__(self, config: SMCConfig):
         """Initialize Local Level Agent.
 
         Parameters
@@ -92,10 +92,10 @@ class LocalLevelAgent(BaseAgent):
         logger.debug(f"Estimated sigma_obs={sigma_obs:.4f}, sigma_level={sigma_level:.4f}")
 
         return LocalLevelParams(
-            sigma_obs=float(sigma_obs),
-            sigma_level=float(sigma_level),
-            m0=float(y[0]),
-            C0=float(var_y),
+            sigma_obs=jnp.asarray(sigma_obs),
+            sigma_level=jnp.asarray(sigma_level),
+            m0=jnp.asarray(y[0]),
+            C0=jnp.asarray(var_y),
         )
 
 
@@ -110,7 +110,7 @@ class LocalLinearTrendAgent(BaseAgent):
     This model captures data with a time-varying level and slope.
     """
 
-    def __init__(self, config: "SMCConfig"):
+    def __init__(self, config: SMCConfig):
         """Initialize Local Linear Trend Agent.
 
         Parameters
@@ -158,7 +158,6 @@ class LocalLinearTrendAgent(BaseAgent):
         sigma_obs = jnp.sqrt(jnp.maximum(var_diff1 / 3, 0.001))
 
         # Initial state estimation using simple linear regression
-        t = jnp.arange(n)
         slope_init = (y[-1] - y[0]) / (n - 1) if n > 1 else 0.0
         level_init = y[0]
 
@@ -168,9 +167,9 @@ class LocalLinearTrendAgent(BaseAgent):
         )
 
         return LocalLinearTrendParams(
-            sigma_obs=float(sigma_obs),
-            sigma_level=float(sigma_level),
-            sigma_slope=float(sigma_slope),
+            sigma_obs=jnp.asarray(sigma_obs),
+            sigma_level=jnp.asarray(sigma_level),
+            sigma_slope=jnp.asarray(sigma_slope),
             m0=jnp.array([level_init, slope_init]),
             C0=jnp.diag(jnp.array([jnp.var(y), sigma_slope**2 * 10])),
         )

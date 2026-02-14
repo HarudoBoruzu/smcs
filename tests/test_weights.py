@@ -3,7 +3,6 @@
 import jax
 import jax.numpy as jnp
 import numpy as np
-import pytest
 
 from smcs.core.weights import compute_ess, log_mean_exp, normalize_log_weights
 

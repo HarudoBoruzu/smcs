@@ -160,8 +160,7 @@ def residual_resample(
     # Create deterministic indices
     det_indices = jnp.repeat(jnp.arange(n_particles), counts, total_repeat_length=n_particles)
 
-    # Stochastic part
-    n_stochastic = n_particles - n_deterministic
+    # Stochastic part (n_stochastic = n_particles - n_deterministic)
     stoch_indices = jax.random.choice(
         key, n_particles, shape=(n_particles,), p=residuals, replace=True
     )

@@ -7,16 +7,17 @@ SMC² (Chopin et al., 2013) is a nested SMC algorithm where:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import chex
 import jax
 import jax.numpy as jnp
 from beartype import beartype
 from jax import lax, vmap
-from jaxtyping import Array, Float, PRNGKeyArray, jaxtyped
+from jaxtyping import Array, Float, Int, PRNGKeyArray, jaxtyped
 
-from smcs.core.particles import SMCInfo, SMCState
+from smcs.core.particles import SMCInfo
 from smcs.core.resampling import ResamplingMethod, resample
 from smcs.core.weights import compute_ess
 
@@ -54,8 +55,8 @@ class SMC2State:
     state_particles: Float[Array, "n_theta n_x state_dim"]
     state_log_weights: Float[Array, "n_theta n_x"]
     param_log_weights: Float[Array, " n_theta"]
-    log_likelihood: float
-    step: int
+    log_likelihood: Float[Array, ""]
+    step: Int[Array, ""]
 
     @property
     def n_theta_particles(self) -> int:
@@ -70,8 +71,8 @@ class SMC2State:
 def smc2_step(
     key: PRNGKeyArray,
     state: SMC2State,
-    observation: Float[Array, "..."],
-    model: "StateSpaceModel",
+    observation: Float[Array, ...],
+    model: StateSpaceModel,
     param_to_model_params: Callable,
     ess_threshold_theta: float = 0.5,
     ess_threshold_x: float = 0.5,
@@ -210,10 +211,8 @@ def smc2_step(
         ),
     )
 
-    # Optional: rejuvenate theta particles with MCMC
-    if rejuvenate_fn is not None and should_resample_theta:
-        # Apply rejuvenation (not implemented here, placeholder)
-        pass
+    # Note: rejuvenate_fn support is reserved for future implementation.
+    # It would require lax.cond to handle should_resample_theta (a traced value).
 
     # Marginal likelihood increment
     log_likelihood_increment = (
@@ -242,7 +241,7 @@ def smc2_step(
 def run_smc2(
     key: PRNGKeyArray,
     observations: Float[Array, "n_timesteps ..."],
-    model: "StateSpaceModel",
+    model: StateSpaceModel,
     param_to_model_params: Callable,
     initial_param_sampler: Callable,
     initial_state_sampler: Callable,
@@ -310,8 +309,8 @@ def run_smc2(
         state_particles=initial_states,
         state_log_weights=jnp.zeros((n_theta_particles, n_x_particles)),
         param_log_weights=jnp.zeros(n_theta_particles),
-        log_likelihood=0.0,
-        step=0,
+        log_likelihood=jnp.array(0.0),
+        step=jnp.array(0, dtype=jnp.int32),
     )
 
     # Scan function

@@ -34,7 +34,7 @@ class GARCHAgent(BaseAgent):
 
     def __init__(
         self,
-        config: "SMCConfig",
+        config: SMCConfig,
         order: tuple[int, int] = (1, 1),
     ):
         """Initialize GARCH Agent.
@@ -119,8 +119,8 @@ class GARCHAgent(BaseAgent):
         )
 
         return GARCHParams(
-            omega=float(omega),
+            omega=jnp.asarray(omega),
             alpha=alpha,
             beta=beta,
-            sigma0=float(sigma0),
+            sigma0=jnp.asarray(sigma0),
         )

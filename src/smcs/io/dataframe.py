@@ -157,7 +157,7 @@ def forecast_to_dataframe(
     horizon, n_features = mean.shape
 
     if column_names is None:
-        column_names = [f"y" if n_features == 1 else f"y_{i}" for i in range(n_features)]
+        column_names = ["y" if n_features == 1 else f"y_{i}" for i in range(n_features)]
 
     data = {}
 

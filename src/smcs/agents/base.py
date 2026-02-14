@@ -75,7 +75,7 @@ class ForecastingAgent(Protocol):
         self,
         observations: Float[Array, "n_timesteps obs_dim"],
         timestamps: pd.DatetimeIndex | None = None,
-    ) -> "ForecastingAgent":
+    ) -> ForecastingAgent:
         """Fit the model to observations.
 
         Parameters
@@ -145,8 +145,8 @@ class BaseAgent(ABC):
 
     def __init__(
         self,
-        config: "SMCConfig",
-        model: "StateSpaceModel",
+        config: SMCConfig,
+        model: StateSpaceModel,
     ):
         """Initialize agent.
 
@@ -160,7 +160,7 @@ class BaseAgent(ABC):
         self._config = config
         self._model = model
         self._filter_state: SMCState | None = None
-        self._params: "ModelParams | None" = None
+        self._params: ModelParams | None = None
         self._is_fitted = False
         self._key = jax.random.PRNGKey(config.seed)
         self._timestamps: pd.DatetimeIndex | None = None
@@ -178,12 +178,12 @@ class BaseAgent(ABC):
         return self._is_fitted
 
     @property
-    def config(self) -> "SMCConfig":
+    def config(self) -> SMCConfig:
         """SMC configuration."""
         return self._config
 
     @property
-    def model(self) -> "StateSpaceModel":
+    def model(self) -> StateSpaceModel:
         """State space model."""
         return self._model
 
@@ -191,7 +191,7 @@ class BaseAgent(ABC):
     def _estimate_params(
         self,
         observations: Float[Array, "n_timesteps obs_dim"],
-    ) -> "ModelParams":
+    ) -> ModelParams:
         """Estimate model parameters from observations.
 
         Subclasses must implement this method.
@@ -212,7 +212,7 @@ class BaseAgent(ABC):
         self,
         observations: Float[Array, "n_timesteps obs_dim"],
         timestamps: pd.DatetimeIndex | None = None,
-    ) -> "BaseAgent":
+    ) -> BaseAgent:
         """Fit the model to observations.
 
         Parameters

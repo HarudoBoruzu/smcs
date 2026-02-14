@@ -54,7 +54,7 @@ class StateSpaceModel(Protocol):
         ...
 
     @abstractmethod
-    def initial_distribution(self, params: ModelParams) -> "Distribution":
+    def initial_distribution(self, params: ModelParams) -> Distribution:
         """Return the initial state distribution p(x_0).
 
         Parameters
@@ -75,7 +75,7 @@ class StateSpaceModel(Protocol):
         params: ModelParams,
         state: Float[Array, " state_dim"],
         t: int | None = None,
-    ) -> "Distribution":
+    ) -> Distribution:
         """Return the transition distribution p(x_t | x_{t-1}).
 
         Parameters
@@ -100,7 +100,7 @@ class StateSpaceModel(Protocol):
         params: ModelParams,
         state: Float[Array, " state_dim"],
         t: int | None = None,
-    ) -> "Distribution":
+    ) -> Distribution:
         """Return the emission distribution p(y_t | x_t).
 
         Parameters
@@ -125,7 +125,7 @@ class StateSpaceModel(Protocol):
         state: Float[Array, " state_dim"],
         observation: Float[Array, " obs_dim"],
         t: int | None = None,
-    ) -> "Distribution":
+    ) -> Distribution:
         """Return the proposal distribution q(x_t | x_{t-1}, y_t).
 
         By default, returns the transition distribution (bootstrap proposal).

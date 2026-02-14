@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from smcs.config import SMCConfig, AgentConfig
+from smcs.config import AgentConfig, SMCConfig
 
 
 class TestSMCConfig:

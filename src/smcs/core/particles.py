@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import chex
 import jax.numpy as jnp
-from jaxtyping import Array, Float, Int
+from jaxtyping import Array, Bool, Float, Int
 
 __all__ = [
     "SMCState",
@@ -27,17 +27,17 @@ class SMCState:
         Log-weights for each particle with shape [n_particles].
     ancestors : Array
         Ancestor indices from resampling with shape [n_particles].
-    log_likelihood : float
-        Cumulative log marginal likelihood estimate.
-    step : int
-        Current time step.
+    log_likelihood : Array
+        Cumulative log marginal likelihood estimate (scalar).
+    step : Array
+        Current time step (scalar integer).
     """
 
     particles: Float[Array, "n_particles state_dim"]
     log_weights: Float[Array, " n_particles"]
     ancestors: Int[Array, " n_particles"]
-    log_likelihood: float
-    step: int
+    log_likelihood: Float[Array, ""]
+    step: Int[Array, ""]
 
     @property
     def n_particles(self) -> int:
@@ -74,14 +74,14 @@ class SMCInfo:
 
     Attributes
     ----------
-    ess : float
-        Effective Sample Size.
-    resampled : bool
-        Whether resampling was performed.
-    acceptance_rate : float | None
-        MCMC acceptance rate (if applicable).
+    ess : Array
+        Effective Sample Size (scalar).
+    resampled : Array
+        Whether resampling was performed (scalar boolean).
+    acceptance_rate : Array | None
+        MCMC acceptance rate (if applicable, scalar).
     """
 
-    ess: float
-    resampled: bool
-    acceptance_rate: float | None = None
+    ess: Float[Array, ""]
+    resampled: Bool[Array, ""]
+    acceptance_rate: Float[Array, ""] | None = None

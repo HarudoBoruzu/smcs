@@ -3,16 +3,14 @@
 import jax
 import jax.numpy as jnp
 import numpy as np
-import pytest
 
+from smcs.models.distributions import MultivariateNormal, Normal
 from smcs.models.dlm import (
     LocalLevelModel,
     LocalLevelParams,
     LocalLinearTrendModel,
-    LocalLinearTrendParams,
 )
 from smcs.models.sv import SVModel, SVParams
-from smcs.models.distributions import Normal, MultivariateNormal
 
 
 class TestNormalDistribution:
@@ -94,7 +92,6 @@ class TestLocalLevelModel:
 
     def test_transition_distribution(self):
         """Transition should be centered at current state."""
-        key = jax.random.PRNGKey(42)
         model = LocalLevelModel()
         params = LocalLevelParams(sigma_obs=0.5, sigma_level=0.1, m0=0.0, C0=1.0)
         state = jnp.array([5.0])

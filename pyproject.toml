@@ -7,7 +7,7 @@ name = "smcs"
 version = "0.1.0"
 description = "JAX-based Sequential Monte Carlo library for time series prediction"
 readme = "README.md"
-license = "Apache-2.0"
+license = {text = "MIT"}
 requires-python = ">=3.10"
 authors = [
     {name = "HarudoBoruzu"}
@@ -23,7 +23,7 @@ keywords = [
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: Apache Software License",
+    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
@@ -62,9 +62,6 @@ docs = [
 
 [project.urls]
 Homepage = "https://github.com/HarudoBoruzu/smcs"
-Repository = "https://github.com/HarudoBoruzu/smcs.git"
-Issues = "https://github.com/HarudoBoruzu/smcs/issues"
-Documentation = "https://github.com/HarudoBoruzu/smcs#readme"
 
 [tool.hatch.build.targets.sdist]
 include = ["/src"]
@@ -78,7 +75,21 @@ target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP", "ANN", "S", "B", "A", "C4", "PT"]
-ignore = ["ANN101", "ANN102", "D100", "D104"]
+ignore = [
+    "ANN001", "ANN002", "ANN003",  # Missing type annotation for args
+    "ANN101", "ANN102",             # Missing type annotation for self/cls
+    "ANN201", "ANN202", "ANN204",   # Missing return type annotations
+    "D100", "D104",                 # Missing docstrings
+    "F722",                         # Syntax error in forward annotation (false positive for jaxtyping)
+    "N806",                         # Variable name should be lowercase (C0, P0 are conventional in state space models)
+    "S110",                         # try-except-pass
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "ANN",   # Missing annotations OK in tests
+    "S101",  # assert usage OK in tests
+]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"

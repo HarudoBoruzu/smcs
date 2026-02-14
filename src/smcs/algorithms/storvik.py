@@ -6,14 +6,15 @@ for models where the posterior has a known form given sufficient statistics.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import chex
 import jax
 import jax.numpy as jnp
 from beartype import beartype
 from jax import lax, vmap
-from jaxtyping import Array, Float, PRNGKeyArray, jaxtyped
+from jaxtyping import Array, Float, Int, PRNGKeyArray, jaxtyped
 
 from smcs.core.particles import SMCInfo
 from smcs.core.resampling import ResamplingMethod, resample
@@ -50,8 +51,8 @@ class StorvikState:
     state_particles: Float[Array, "n_particles state_dim"]
     sufficient_stats: Float[Array, "n_particles stats_dim"]
     log_weights: Float[Array, " n_particles"]
-    log_likelihood: float
-    step: int
+    log_likelihood: Float[Array, ""]
+    step: Int[Array, ""]
 
     @property
     def n_particles(self) -> int:
@@ -62,8 +63,8 @@ class StorvikState:
 def storvik_step(
     key: PRNGKeyArray,
     state: StorvikState,
-    observation: Float[Array, "..."],
-    model: "StateSpaceModel",
+    observation: Float[Array, ...],
+    model: StateSpaceModel,
     update_sufficient_stats: Callable,
     sample_params_from_stats: Callable,
     stats_to_model_params: Callable,
@@ -182,7 +183,7 @@ def storvik_step(
 def run_storvik_filter(
     key: PRNGKeyArray,
     observations: Float[Array, "n_timesteps ..."],
-    model: "StateSpaceModel",
+    model: StateSpaceModel,
     update_sufficient_stats: Callable,
     sample_params_from_stats: Callable,
     stats_to_model_params: Callable,
@@ -241,8 +242,8 @@ def run_storvik_filter(
         state_particles=initial_states,
         sufficient_stats=initial_sufficient_stats,
         log_weights=jnp.zeros(n_particles),
-        log_likelihood=0.0,
-        step=0,
+        log_likelihood=jnp.array(0.0),
+        step=jnp.array(0, dtype=jnp.int32),
     )
 
     # Scan function

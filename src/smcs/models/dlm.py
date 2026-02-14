@@ -78,10 +78,10 @@ class LocalLevelParams(ModelParams):
         Initial level variance.
     """
 
-    sigma_obs: float
-    sigma_level: float
-    m0: float
-    C0: float
+    sigma_obs: Float[Array, ""]
+    sigma_level: Float[Array, ""]
+    m0: Float[Array, ""]
+    C0: Float[Array, ""]
 
 
 @chex.dataclass(frozen=True)
@@ -107,9 +107,9 @@ class LocalLinearTrendParams(ModelParams):
         Initial state covariance [2, 2].
     """
 
-    sigma_obs: float
-    sigma_level: float
-    sigma_slope: float
+    sigma_obs: Float[Array, ""]
+    sigma_level: Float[Array, ""]
+    sigma_slope: Float[Array, ""]
     m0: Float[Array, " 2"]
     C0: Float[Array, "2 2"]
 

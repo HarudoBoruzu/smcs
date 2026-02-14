@@ -18,7 +18,7 @@ __all__ = [
 
 
 @jaxtyped(typechecker=beartype)
-def compute_ess(log_weights: Float[Array, " n_particles"]) -> float:
+def compute_ess(log_weights: Float[Array, " n_particles"]) -> Float[Array, ""]:
     """Compute Effective Sample Size (ESS).
 
     ESS = 1 / sum(w_i^2) = exp(-logsumexp(2 * log_w_normalized))
@@ -30,8 +30,8 @@ def compute_ess(log_weights: Float[Array, " n_particles"]) -> float:
 
     Returns
     -------
-    ess : float
-        Effective sample size, in range (0, n_particles].
+    ess : Array
+        Effective sample size (scalar), in range (0, n_particles].
     """
     log_weights_normalized = log_weights - jax.scipy.special.logsumexp(log_weights)
     return jnp.exp(-jax.scipy.special.logsumexp(2 * log_weights_normalized))
@@ -57,7 +57,7 @@ def normalize_log_weights(
 
 
 @jaxtyped(typechecker=beartype)
-def log_mean_exp(log_values: Float[Array, " n"]) -> float:
+def log_mean_exp(log_values: Float[Array, " n"]) -> Float[Array, ""]:
     """Compute log of the mean of exp(log_values).
 
     log(mean(exp(x))) = logsumexp(x) - log(n)
@@ -71,8 +71,8 @@ def log_mean_exp(log_values: Float[Array, " n"]) -> float:
 
     Returns
     -------
-    result : float
-        Log of the mean of the exponentiated values.
+    result : Array
+        Log of the mean of the exponentiated values (scalar).
     """
     n = log_values.shape[0]
     return jax.scipy.special.logsumexp(log_values) - jnp.log(n)

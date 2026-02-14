@@ -6,14 +6,15 @@ and Particle Gibbs (PG) for batch parameter learning.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, NamedTuple
+from collections.abc import Callable
+from typing import TYPE_CHECKING, NamedTuple
 
 import chex
 import jax
 import jax.numpy as jnp
 from beartype import beartype
 from jax import lax
-from jaxtyping import Array, Float, PRNGKeyArray, jaxtyped
+from jaxtyping import Array, Bool, Float, PRNGKeyArray, jaxtyped
 
 from smcs.algorithms.bootstrap import run_bootstrap_filter
 
@@ -43,8 +44,8 @@ class PMMHState:
     """
 
     params: Float[Array, " param_dim"]
-    log_likelihood: float
-    log_prior: float
+    log_likelihood: Float[Array, ""]
+    log_prior: Float[Array, ""]
 
 
 class PMMHResult(NamedTuple):
@@ -62,7 +63,7 @@ class PMMHResult(NamedTuple):
 
     samples: Float[Array, "n_samples param_dim"]
     log_likelihoods: Float[Array, " n_samples"]
-    acceptance_rate: float
+    acceptance_rate: Float[Array, ""]
 
 
 @jaxtyped(typechecker=beartype)
@@ -70,12 +71,12 @@ def pmmh_step(
     key: PRNGKeyArray,
     state: PMMHState,
     observations: Float[Array, "n_timesteps ..."],
-    model: "StateSpaceModel",
+    model: StateSpaceModel,
     param_to_model_params: Callable,
     log_prior_fn: Callable,
     proposal_fn: Callable,
     n_particles: int = 100,
-) -> tuple[PMMHState, bool]:
+) -> tuple[PMMHState, Bool[Array, ""]]:
     """Perform one step of Particle Marginal Metropolis-Hastings.
 
     Parameters
@@ -152,7 +153,7 @@ def pmmh_step(
 def run_pmmh(
     key: PRNGKeyArray,
     observations: Float[Array, "n_timesteps ..."],
-    model: "StateSpaceModel",
+    model: StateSpaceModel,
     param_to_model_params: Callable,
     log_prior_fn: Callable,
     proposal_fn: Callable,
@@ -247,7 +248,7 @@ def run_pmmh(
     return PMMHResult(
         samples=samples,
         log_likelihoods=log_likelihoods,
-        acceptance_rate=float(acceptance_rate),
+        acceptance_rate=jnp.asarray(acceptance_rate, dtype=jnp.float32),
     )
 
 
@@ -268,7 +269,9 @@ def random_walk_proposal(
     """
     scale = jnp.atleast_1d(scale)
 
-    def proposal_fn(key: PRNGKeyArray, params: Float[Array, " param_dim"]) -> Float[Array, " param_dim"]:
+    def proposal_fn(
+        key: PRNGKeyArray, params: Float[Array, " param_dim"]
+    ) -> Float[Array, " param_dim"]:
         noise = jax.random.normal(key, shape=params.shape)
         return params + scale * noise
 

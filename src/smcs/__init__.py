@@ -111,11 +111,11 @@ from smcs.core import (
 )
 from smcs.io import forecast_to_dataframe, from_dataframe, to_dataframe
 from smcs.models import (
+    DLM,
     ARIMAModel,
     ARIMAParams,
     Categorical,
     Distribution,
-    DLM,
     DLMParams,
     DynamicFactorModel,
     DynamicFactorParams,

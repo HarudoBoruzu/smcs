@@ -47,10 +47,10 @@ class GARCHParams(ModelParams):
         Initial volatility.
     """
 
-    omega: float
+    omega: Float[Array, ""]
     alpha: Float[Array, " q"]
     beta: Float[Array, " p"]
-    sigma0: float
+    sigma0: Float[Array, ""]
 
 
 @chex.dataclass(frozen=True)
@@ -59,7 +59,7 @@ class GJRGARCHParams(ModelParams):
 
     The GJR-GARCH(1,1) model is:
         y_t = sigma_t * epsilon_t,  epsilon_t ~ N(0, 1)
-        sigma_t^2 = omega + alpha * y_{t-1}^2 + gamma * y_{t-1}^2 * I(y_{t-1} < 0) + beta * sigma_{t-1}^2
+        sigma_t^2 = omega + alpha*y_{t-1}^2 + gamma*y_{t-1}^2*I(y_{t-1}<0) + beta*sigma_{t-1}^2
 
     The gamma term captures the leverage effect.
 
@@ -77,11 +77,11 @@ class GJRGARCHParams(ModelParams):
         Initial volatility.
     """
 
-    omega: float
-    alpha: float
-    gamma: float
-    beta: float
-    sigma0: float
+    omega: Float[Array, ""]
+    alpha: Float[Array, ""]
+    gamma: Float[Array, ""]
+    beta: Float[Array, ""]
+    sigma0: Float[Array, ""]
 
 
 class GARCHModel(StateSpaceModel):
