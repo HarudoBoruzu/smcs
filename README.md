@@ -1,10 +1,9 @@
 # smcs
 
-[![CI](https://github.com/HarudoBoruzu/smcs/actions/workflows/ci.yml/badge.svg)](https://github.com/HarudoBoruzu/smcs/actions/workflows/ci.yml)
+[![CI](https://github.com/HarudoBoruzus/smcs/actions/workflows/ci.yml/badge.svg)](https://github.com/HarudoBoruzus/smcs/actions/workflows/ci.yml)
 [![PyPI version](https://badge.fury.io/py/smcs.svg)](https://badge.fury.io/py/smcs)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **smcs** is a JAX-based Sequential Monte Carlo library for time series prediction. It combines the academic rigor of [particles](https://github.com/nchopin/particles), the functional design patterns of [BlackJAX](https://github.com/blackjax-devs/blackjax), and the state-space model abstractions of [Dynamax](https://github.com/probml/dynamax).
 
@@ -198,7 +197,7 @@ config = SMCConfig(
 
 ```bash
 # Clone repository
-git clone https://github.com/smcs-authors/smcs.git
+git clone https://github.com/HarudoBoruzus/smcs.git
 cd smcs
 
 # Install in development mode

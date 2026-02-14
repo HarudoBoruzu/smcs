@@ -187,7 +187,7 @@ def liu_west_step(
     def compute_log_likelihood(state_particle, param_vec):
         model_params = param_to_model_params(param_vec)
         emit_dist = model.emission_distribution(model_params, state_particle, state.step + 1)
-        return emit_dist.log_prob(observation)
+        return jnp.squeeze(emit_dist.log_prob(observation))
 
     log_likelihoods = vmap(compute_log_likelihood)(new_state_particles, new_param_particles)
     new_log_weights = log_weights + log_likelihoods

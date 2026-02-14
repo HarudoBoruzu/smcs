@@ -157,7 +157,7 @@ def smc2_step(
         # Update state weights with observation likelihood
         def compute_x_log_lik(x):
             emit_dist = model.emission_distribution(model_params, x, state.step + 1)
-            return emit_dist.log_prob(observation)
+            return jnp.squeeze(emit_dist.log_prob(observation))
 
         x_log_liks = vmap(compute_x_log_lik)(new_x_particles)
         new_x_log_weights = x_log_weights + x_log_liks
