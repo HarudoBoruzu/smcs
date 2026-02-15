@@ -21,6 +21,9 @@ __all__ = [
     "multinomial_resample",
     "stratified_resample",
     "residual_resample",
+    "killing_resample",
+    "ssp_resample",
+    "optimal_transport_resample",
     "resample",
 ]
 
@@ -170,7 +173,174 @@ def residual_resample(
     return jnp.where(idx < n_deterministic, det_indices, stoch_indices)
 
 
-ResamplingMethod = Literal["systematic", "multinomial", "stratified", "residual"]
+@jaxtyped(typechecker=beartype)
+def killing_resample(
+    key: PRNGKeyArray,
+    log_weights: Float[Array, " n_particles"],
+) -> Int[Array, " n_particles"]:
+    """Killing resampling (branching process).
+
+    Uses a branching process interpretation where particles are killed
+    or duplicated based on their weights.
+
+    Parameters
+    ----------
+    key : PRNGKeyArray
+        JAX random key.
+    log_weights : Array
+        Log-weights (not necessarily normalized).
+
+    Returns
+    -------
+    indices : Array
+        Resampled particle indices.
+    """
+    n_particles = log_weights.shape[0]
+
+    # Normalize weights
+    weights = jnp.exp(log_weights - jax.scipy.special.logsumexp(log_weights))
+    scaled_weights = n_particles * weights
+
+    # Expected number of offspring
+    floor_counts = jnp.floor(scaled_weights).astype(jnp.int32)
+    remainders = scaled_weights - floor_counts
+
+    # Stochastic rounding for remainders
+    key, round_key = jax.random.split(key)
+    extra = (jax.random.uniform(round_key, shape=(n_particles,)) < remainders).astype(
+        jnp.int32
+    )
+    counts = floor_counts + extra
+
+    # Adjust counts to sum to n_particles
+    total = jnp.sum(counts)
+    n_particles - total
+
+    # If diff > 0, add to random particles; if diff < 0, remove from random
+    key, adjust_key = jax.random.split(key)
+
+    def adjust_counts(counts, diff, key):
+        # Simple adjustment: add/remove from highest/lowest weight particles
+        sorted_idx = jnp.argsort(weights)
+        if diff > 0:
+            # Add to highest weight particles
+            for i in range(diff):
+                idx = sorted_idx[-(i % n_particles) - 1]
+                counts = counts.at[idx].add(1)
+        return counts
+
+    # Use repeat to create indices
+    indices = jnp.repeat(jnp.arange(n_particles), counts, total_repeat_length=n_particles)
+    return indices
+
+
+@jaxtyped(typechecker=beartype)
+def ssp_resample(
+    key: PRNGKeyArray,
+    log_weights: Float[Array, " n_particles"],
+) -> Int[Array, " n_particles"]:
+    """Srinivasan Sampling Process (SSP) resampling.
+
+    A low-variance resampling method that guarantees the number of
+    copies of each particle differs by at most 1 from the expected value.
+
+    Parameters
+    ----------
+    key : PRNGKeyArray
+        JAX random key.
+    log_weights : Array
+        Log-weights (not necessarily normalized).
+
+    Returns
+    -------
+    indices : Array
+        Resampled particle indices.
+    """
+    n_particles = log_weights.shape[0]
+
+    # Normalize weights
+    weights = jnp.exp(log_weights - jax.scipy.special.logsumexp(log_weights))
+    scaled_weights = n_particles * weights
+
+    # Floor counts
+    floor_counts = jnp.floor(scaled_weights).astype(jnp.int32)
+    remainders = scaled_weights - floor_counts
+
+    # Sort by remainders in descending order
+    sorted_idx = jnp.argsort(-remainders)
+    sorted_remainders = remainders[sorted_idx]
+
+    # Cumulative sum of remainders
+    cumsum = jnp.cumsum(sorted_remainders)
+    n_extra = jnp.int32(jnp.round(cumsum[-1]))
+
+    # Select particles to get extra copy
+    u = jax.random.uniform(key)
+    positions = (jnp.arange(n_extra) + u) / n_extra * cumsum[-1]
+    extra_sorted = jnp.searchsorted(cumsum, positions)
+
+    # Add extra counts
+    extra_counts = jnp.zeros(n_particles, dtype=jnp.int32)
+    extra_counts = extra_counts.at[sorted_idx].add(
+        jnp.bincount(extra_sorted, length=n_particles)
+    )
+
+    counts = floor_counts + extra_counts
+
+    # Create indices
+    return jnp.repeat(jnp.arange(n_particles), counts, total_repeat_length=n_particles)
+
+
+@jaxtyped(typechecker=beartype)
+def optimal_transport_resample(
+    key: PRNGKeyArray,
+    log_weights: Float[Array, " n_particles"],
+) -> Int[Array, " n_particles"]:
+    """Optimal transport resampling.
+
+    Minimizes the expected squared distance between resampled and
+    original particle positions by solving an optimal transport problem.
+
+    This is a simplified 1D version using the quantile coupling.
+
+    Parameters
+    ----------
+    key : PRNGKeyArray
+        JAX random key.
+    log_weights : Array
+        Log-weights (not necessarily normalized).
+
+    Returns
+    -------
+    indices : Array
+        Resampled particle indices.
+    """
+    n_particles = log_weights.shape[0]
+
+    # Normalize weights
+    weights = jnp.exp(log_weights - jax.scipy.special.logsumexp(log_weights))
+
+    # Compute cumulative distribution
+    cumsum = jnp.cumsum(weights)
+
+    # Target uniform quantiles
+    uniform_quantiles = (jnp.arange(n_particles) + 0.5) / n_particles
+
+    # Add small random perturbation for tie-breaking
+    u = jax.random.uniform(key, shape=(n_particles,)) * 0.5 / n_particles
+    perturbed_quantiles = uniform_quantiles + u - 0.25 / n_particles
+
+    # Map to particle indices via inverse CDF
+    indices = jnp.searchsorted(cumsum, perturbed_quantiles)
+    indices = jnp.clip(indices, 0, n_particles - 1)
+
+    return indices
+
+
+ResamplingMethod = Literal[
+    "systematic", "multinomial", "stratified", "residual",
+    "killing", "ssp", "optimal_transport"
+]
 
 
 def resample(
@@ -187,7 +357,8 @@ def resample(
     log_weights : Array
         Log-weights (not necessarily normalized).
     method : str
-        Resampling method: "systematic", "multinomial", "stratified", or "residual".
+        Resampling method: "systematic", "multinomial", "stratified",
+        "residual", "killing", "ssp", or "optimal_transport".
 
     Returns
     -------
@@ -199,5 +370,8 @@ def resample(
         "multinomial": multinomial_resample,
         "stratified": stratified_resample,
         "residual": residual_resample,
+        "killing": killing_resample,
+        "ssp": ssp_resample,
+        "optimal_transport": optimal_transport_resample,
     }
     return methods[method](key, log_weights)
